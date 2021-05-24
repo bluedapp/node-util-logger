@@ -4,3 +4,4 @@ scripts/*
 .eslintrc
 commitlint.config.js
 tsconfig.json
+test/*

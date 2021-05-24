@@ -13,7 +13,14 @@ const serverIp = os.hostname().replace(/-/g, '.')
 type DailyRotateFile = typeof winston.transports & {
   DailyRotateFile: any
 }
-
+interface Meta {
+  'uid'?: string,
+  'client_ip': string,
+  'request_id': string,
+  'request_url': string,
+  'request_type': string,
+  'request_header': string
+}
 export default class {
   public logType: string
 
@@ -95,16 +102,10 @@ export default class {
     const { colors, isLocal } = this
 
     const obj: {
-      [method: string]: Function
+      error: (e: Error, data?: Record<string, any>, meta?: Meta) => null | void,
+      [method: string]: (data: Record<string, any>, meta?: Meta) => null | void
     } = {
-      error: (error: Error, data?: Record<string, any>, meta?: {
-        'uid'?: string,
-        'client_ip': string,
-        'request_id': string,
-        'request_url': string,
-        'request_type': string,
-        'request_header': string
-      }) => {
+      error: (error: Error, data?: Record<string, any>, meta?: Meta) => {
         const err = {
           err_msg: error.message,
           err_name: error.name,
@@ -135,14 +136,7 @@ export default class {
     }
     this.levels.forEach(level => {
       if (obj[level]) return
-      obj[level] = (description: Record<string, any>, meta?: {
-        'uid'?: string,
-        'client_ip': string,
-        'request_id': string,
-        'request_url': string,
-        'request_type': string,
-        'request_header': string
-      }) => {
+      obj[level] = (description: Record<string, any>, meta?: Meta) => {
         const raw = {
           ...this.kafkaMeta,
           ...meta,
@@ -151,7 +145,7 @@ export default class {
           level,
           description: JSON.stringify(description),
         }
-        if (isLocal) console.log(colors.green(raw))
+        if (isLocal) console.log(raw)
         logger.accessLog(raw)
         if (!this.kafkaClient) return
         this.kafkaClient.getClient('default').send(
