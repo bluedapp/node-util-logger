@@ -1,9 +1,9 @@
-## 一个较为公共的log组件封装
+## 使用kafka的log组件封装
 
 继承自 `logger-intl`，由 `winston-logger` 驱动。
 
 ```bash
-npm i @blued-core/winston-logger
+npm i @blued-core/winston-kafka-logger
 ```
 
 ### 使用方法
@@ -36,4 +36,3 @@ Argument|Type|Required|Desc
 :--|:--|:--|:--
 `error`|`Error`|✅|日志的输出内容
 `data`|`Record<string, any>`|❌|日志的输出内容
-

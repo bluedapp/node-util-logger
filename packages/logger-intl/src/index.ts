@@ -34,6 +34,8 @@ export default abstract class Logger implements LoggerIntl {
   getLogger (logType: string) {
     const logger = this.buildLogger(logType)
     const { colors, isLocal } = this
+    const now = Date.now()
+    const datetime = formatTime(now)
 
     return {
       access (data?: Record<string, any>) {
@@ -42,7 +44,8 @@ export default abstract class Logger implements LoggerIntl {
         }
         logger.accessLog({
           ...data,
-          ms_timestamp: Date.now()
+          ms_timestamp: now,
+          datetime,
         })
       },
       error (error: Error, data?: Record<string, any>) {
@@ -53,7 +56,7 @@ export default abstract class Logger implements LoggerIntl {
           error,
         }
 
-        const results = { ...err, ...data, ms_timestamp: Date.now() }
+        const results = { ...err, ...data, ms_timestamp: now, datetime }
 
         // 添加本地环境的colors输出
         if (isLocal) {
@@ -65,4 +68,15 @@ export default abstract class Logger implements LoggerIntl {
   }
 
   abstract buildLogger (logType: string): Loggers
+}
+
+function formatTime(time: number): string {
+  const date = new Date(time)
+  const Y = date.getFullYear()
+  const M = date.getMonth() + 1
+  const D = date.getDate()
+  const H = date.getHours()
+  const m = date.getMinutes()
+  const s = date.getSeconds()
+  return `${Y}-${M < 10 ? `0${M}` : M}-${D} ${H}:${m}:${s}`
 }
