@@ -34,11 +34,11 @@ export default abstract class Logger implements LoggerIntl {
   getLogger (logType: string) {
     const logger = this.buildLogger(logType)
     const { colors, isLocal } = this
-    const now = Date.now()
-    const datetime = formatTime(now)
 
     return {
       access (data?: Record<string, any>) {
+        const now = Date.now()
+        const datetime = formatTime(now)
         if (isLocal) {
           console.log(colors.green(data))
         }
@@ -49,6 +49,8 @@ export default abstract class Logger implements LoggerIntl {
         })
       },
       error (error: Error, data?: Record<string, any>) {
+        const now = Date.now()
+        const datetime = formatTime(now)
         const err = {
           err_msg: error.message,
           err_name: error.name,
