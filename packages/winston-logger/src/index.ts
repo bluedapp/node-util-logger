@@ -19,6 +19,7 @@ export default class extends Logger {
       LOG_FILE_DIRNAME: logFileDirname,
       LOG_FILE_ACCESS_FILENAME: logFileAccessFilename,
       LOG_FILE_ERROR_FILENAME: logFileErrorFilename,
+      LOG_FILE_WARN_FILENAME: logFileWarnFilename,
       LOG_FILE_DATE_PATTERN: logFileDatePattern,
       LOG_FILE_MAX_FILES: logFileMaxFiles,
       LOG_FILE_MAX_SIZE: logFileMaxSize,
@@ -26,7 +27,7 @@ export default class extends Logger {
 
     const accessTransports = []
     const errorTransports = []
-
+    const warnTransports = []
     accessTransports.push(new winston.transports.Console({
       level: 'info',
       silent: logConsole !== 'true',
@@ -63,6 +64,16 @@ export default class extends Logger {
           maxSize: logFileMaxSize || null,
           maxFiles: logFileMaxFiles || '30d',
         }))
+
+        warnTransports.push(new (winston.transports as DailyRotateFile).DailyRotateFile({
+          filename: logFileWarnFilename || `%DATE%-${logType}.warn.log`,
+          dirname: logPath,
+          datePattern: logFileDatePattern || 'YYYY-MM-DD-HH',
+          zippedArchive: true,
+          level: 'warn',
+          maxSize: logFileMaxSize || null,
+          maxFiles: logFileMaxFiles || '30d',
+        }))
       }
     }
     const defaultMeta = logMetaService ? { service: logMetaService } : null
@@ -75,10 +86,15 @@ export default class extends Logger {
       defaultMeta,
       transports: errorTransports,
     })
+    const warnLog = winston.createLogger({
+      defaultMeta,
+      transports: warnTransports,
+    })
 
     this.cache.set(logType, {
       accessLog: accessLog.info.bind(accessLog),
       errorLog: errorLog.error.bind(errorLog),
+      warnLog: warnLog.warn.bind(warnLog),
     })
 
     return this.cache.get(logType)
